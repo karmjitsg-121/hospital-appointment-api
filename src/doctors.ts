@@ -15,5 +15,13 @@ export const listDoctorsBySpecialty = (specialty: string): Promise<Doctor[]> =>
     orderBy: { name: "asc" }
   });
 
-export const deleteDoctor = (id: number): Promise<Doctor> =>
-  prisma.doctor.delete({ where: { id } });
+export const deleteDoctor = async (id: number): Promise<Doctor> => {
+  try {
+    return await prisma.doctor.delete({ where: { id } });
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      throw new Error("Cannot delete a doctor who has appointments.");
+    }
+    throw error;
+  }
+};
